@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Auditor.Enumerators;
 using Auditor.Services;
 using Auditor.Structures;
+using Auditor.Utilities;
 using Discord;
 using Discord.Commands;
 using Discord.Rest;
@@ -20,7 +21,7 @@ namespace Auditor.Commands
         public DiscordShardedClient Shard { get; set; }
 
         [Command("toggle"), Summary("Change a state of one of the audits"), Alias("t")]
-        public async Task Toggle(Events eventToggle)
+        public async Task Toggle(Events eventToggle, ulong? channel = null)
         {
             GuildBson guild = await Database.LoadRecordsByGuildId(Context.Guild.Id);
 
@@ -31,9 +32,11 @@ namespace Auditor.Commands
             }
             else
             {
-                guild.GetType().GetProperty(info.Name).SetValue(guild, !(bool)guild.GetType().GetProperty(info.Name).GetValue(guild));
+                MutableKeyValuePair<ulong?, bool> kpv = (MutableKeyValuePair<ulong?, bool>)guild.GetType().GetProperty(info.Name).GetValue(guild);
+                kpv.Value = !kpv.Value;
+                kpv.Key = channel;
+                guild.GetType().GetProperty(info.Name).SetValue(guild, kpv);
                 await Database.UpdateGuild(guild);
-                await ReplyAsync(info.GetValue(guild).ToString());
             }
         }
         
@@ -110,12 +113,13 @@ namespace Auditor.Commands
         {
             foreach (PropertyInfo setting in typeof(GuildBson).GetProperties())
             {
-                if (setting.GetValue(guild)?.GetType() != typeof(bool))
+                if (setting.GetValue(guild)?.GetType() != typeof(MutableKeyValuePair<ulong?, bool>))
                 {
                     continue;
                 }
-                
-                yield return new KeyValuePair<PropertyInfo, bool>(setting, (bool)setting.GetValue(guild));
+
+                MutableKeyValuePair<ulong?, bool> kvp = (MutableKeyValuePair<ulong?, bool>) setting.GetValue(guild);
+                yield return new KeyValuePair<PropertyInfo, bool>(setting, kvp.Value);
             }
         }
             

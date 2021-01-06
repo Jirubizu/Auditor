@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Auditor.Handlers;
 using Auditor.Services;
@@ -7,6 +8,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using EventHandler = Auditor.Handlers.EventHandler;
 
 namespace Auditor
@@ -17,6 +19,7 @@ namespace Auditor
         private readonly CommandService command;
         private ConfigService config;
         private HelpService helpService;
+        private ILogger logger = Log.ForContext<Auditor>();
 
         public Auditor(DiscordShardedClient shard = null, CommandService cmd = null)
         {
@@ -37,6 +40,22 @@ namespace Auditor
 
         public async Task SetupAsync(string configLoc)
         {
+            // Find a neater way of checking if the database is down.
+            using(TcpClient tcpClient = new ())
+            {
+                try 
+                {
+                    await tcpClient.ConnectAsync("localhost", 27017);
+                    logger.Information("Database is active");
+                } 
+                catch (Exception) 
+                {
+                    logger.Fatal("Could not connect to the database. Make sure your database running");
+                    throw;
+                }
+                
+            }
+            
             config = new ConfigService(configLoc);
             helpService = new HelpService(command);
             await client.LoginAsync(TokenType.Bot, config.Config.Token);
@@ -45,6 +64,7 @@ namespace Auditor
             client.Log += LogAsync;
 
             IServiceProvider services = SetupServices();
+            
 
             CommandHandler commandHandler = services.GetRequiredService<CommandHandler>();
             await commandHandler.SetupAsync();
@@ -52,6 +72,7 @@ namespace Auditor
             helpService.Setup();
 
             await Task.Delay(-1);
+            
         }
 
         private IServiceProvider SetupServices()
@@ -76,7 +97,7 @@ namespace Auditor
 
         private Task LogAsync(LogMessage message)
         {
-            Console.WriteLine(message.Message);
+            logger.Debug(message.Message);
             return Task.CompletedTask;
         }
     }

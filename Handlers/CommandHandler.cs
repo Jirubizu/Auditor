@@ -6,6 +6,7 @@ using Auditor.Structures;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Serilog;
 
 namespace Auditor.Handlers
 {
@@ -15,7 +16,8 @@ namespace Auditor.Handlers
         private readonly CommandService commandService;
         private readonly IServiceProvider services;
         private readonly DatabaseService database;
-
+        private readonly ILogger logger = Log.ForContext<CommandHandler>();
+        
         public CommandHandler(DiscordShardedClient c, CommandService cs, IServiceProvider s, DatabaseService d)
         {
             client = c;
@@ -34,7 +36,7 @@ namespace Auditor.Handlers
 
         private Task ClientOnShardReady(DiscordSocketClient arg)
         {
-            Console.WriteLine($"Invite bot: https://discord.com/oauth2/authorize?client_id={client.CurrentUser.Id}&scope=bot");
+            logger.Information($"Invite bot: https://discord.com/oauth2/authorize?client_id={client.CurrentUser.Id}&scope=bot");
             return Task.CompletedTask;
         }
 
@@ -65,7 +67,7 @@ namespace Auditor.Handlers
 
         private Task LogAsync(LogMessage message)
         {
-            Console.WriteLine(message.Message);
+            logger.Debug(message.Message);
             return Task.CompletedTask;
         }
     }

@@ -128,15 +128,14 @@ namespace Auditor.Services
                         return;
                     }
 
-                    Console.WriteLine(paginated.Options.TimeoutAction.ToString());
-
-                    if (paginated.Options.TimeoutAction == StopAction.DeleteMessage)
+                    switch (paginated.Options.TimeoutAction)
                     {
-                        await message.DeleteAsync();
-                    }
-                    else if (paginated.Options.TimeoutAction == StopAction.ClearReactions)
-                    {
-                        await message.RemoveAllReactionsAsync();
+                        case StopAction.DeleteMessage:
+                            await message.DeleteAsync();
+                            break;
+                        case StopAction.ClearReactions:
+                            await message.RemoveAllReactionsAsync();
+                            break;
                     }
 
                     messages.Remove(message.Id);

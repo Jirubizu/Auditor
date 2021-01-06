@@ -19,19 +19,6 @@ namespace Auditor.Services
 
         public DatabaseService(DiscordShardedClient shardedClient)
         {
-            // Find a neater way of checking if the database is down.
-            using(TcpClient tcpClient = new ())
-            {
-                try 
-                {
-                    tcpClient.Connect("localhost", 27017);
-                } 
-                catch (Exception) 
-                {
-                    throw new Exception("Could not connect to the database. Make sure your database running");
-                }
-            }
-
             MongoClient client = new("mongodb://localhost:27017");
             mongoDatabase = client.GetDatabase("auditor");
 
