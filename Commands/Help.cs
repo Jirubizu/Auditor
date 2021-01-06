@@ -20,16 +20,18 @@ namespace Auditor.Commands
         [Command("help"), Alias("h"), Summary("Display the help window")]
         public async Task Help()
         {
-            var builder = new StringBuilder();
+            StringBuilder builder = new ();
             builder.Append("```cs\n");
-            foreach (var command in HelpService.NoNameDubplicates)
+            string prefix = Database.LoadRecordsByGuildId(Context.Guild.Id).Result.Prefix;
+            
+            foreach (CommandInfo command in HelpService.NoNameDubplicates)
             {
                 builder.Append(
-                    $"{Database.LoadRecordsByGuildId(Context.Guild.Id).Result.Prefix}{command.Name.ToLowerInvariant()} {"//".PadLeft(20 - command.Name.Length)} {command.Summary} \n");
+                    $"{prefix}{command.Name.ToLowerInvariant()} {"//".PadLeft(20 - command.Name.Length)} {command.Summary} \n");
             }
 
             builder.Append("```");
-            var embed = new EmbedBuilder()
+            EmbedBuilder embed = new ()
             {
                 Description = builder.ToString(),
                 Color = Color.Gold
@@ -41,7 +43,7 @@ namespace Auditor.Commands
         [Command("help")]
         public async Task Help(string module)
         {
-            var builder = new StringBuilder("```cs\n");
+            StringBuilder builder = new ("```cs\n");
             
             if (HelpService.AvailableEnums.TryGetValue(module, out Type e))
             {

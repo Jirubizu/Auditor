@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Auditor.Handlers;
 using Auditor.Services;
@@ -65,7 +64,6 @@ namespace Auditor
             collection.AddSingleton(helpService);
             collection.AddSingleton<CommandHandler>();
             collection.AddSingleton<DatabaseService>();
-            collection.AddSingleton<HttpService>();
             collection.AddSingleton<PaginationService>();
 
             foreach (Type handler in typeof(EventHandler).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(EventHandler))))
