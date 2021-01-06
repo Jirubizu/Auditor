@@ -1,8 +1,5 @@
-﻿using Auditor.Attributes.Preconditions;
-
-namespace Auditor.Enumerators
+﻿namespace Auditor.Enumerators
 {
-    [ParameterEnum]
     public enum Events
     {
         ChannelCreated,
