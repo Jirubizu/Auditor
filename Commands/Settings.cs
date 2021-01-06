@@ -19,7 +19,7 @@ namespace Auditor.Commands
         public DatabaseService Database { get; set; }
         public DiscordShardedClient Shard { get; set; }
 
-        [Command("toggle"), Summary("Change a state of one of the audits")]
+        [Command("toggle"), Summary("Change a state of one of the audits"), Alias("t")]
         public async Task Toggle(Events eventToggle)
         {
             GuildBson guild = await Database.LoadRecordsByGuildId(Context.Guild.Id);
@@ -35,10 +35,6 @@ namespace Auditor.Commands
                 await Database.UpdateGuild(guild);
                 await ReplyAsync(info.GetValue(guild).ToString());
             }
-            
-            
-
-            
         }
         
         [Command("auditorsettings"), Summary("Change the state of the auditor"), Alias("settings", "s")]
@@ -65,7 +61,7 @@ namespace Auditor.Commands
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Command("createsection"), Summary("Create a section of channels with currently enabled watchers")]
+        [Command("createsection"), Summary("Create a section of channels with currently enabled watchers"), Alias("cs")]
         public async Task CreateSection()
         {
             GuildBson guild = await Database.LoadRecordsByGuildId(Context.Guild.Id);
@@ -86,7 +82,7 @@ namespace Auditor.Commands
         }
         
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Command("deletesection"), Summary("Delete Auditor section (Cleanup)")]
+        [Command("deletesection"), Summary("Delete Auditor section (Cleanup)"), Alias("ds")]
         public async Task DeleteSection()
         {
             GuildBson guild = await Database.LoadRecordsByGuildId(Context.Guild.Id);
@@ -114,7 +110,7 @@ namespace Auditor.Commands
         {
             foreach (PropertyInfo setting in typeof(GuildBson).GetProperties())
             {
-                if (setting.GetValue(guild).GetType() != typeof(bool))
+                if (setting.GetValue(guild)?.GetType() != typeof(bool))
                 {
                     continue;
                 }
