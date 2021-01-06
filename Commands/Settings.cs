@@ -12,6 +12,7 @@ using Discord;
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
+using Serilog;
 
 namespace Auditor.Commands
 {
@@ -19,6 +20,7 @@ namespace Auditor.Commands
     {
         public DatabaseService Database { get; set; }
         public DiscordShardedClient Shard { get; set; }
+        private readonly ILogger logger = Log.ForContext<Settings>();
 
         [Command("toggle"), Summary("Change a state of one of the audits"), Alias("t")]
         public async Task Toggle(Events eventToggle, ulong? channel = null)
@@ -75,7 +77,11 @@ namespace Auditor.Commands
             {
                 if (!value) continue;
                 
-                await Context.Guild.CreateTextChannelAsync(key.Name.Replace("Event", ""), o => o.CategoryId = categoryChannel.Id);
+                RestTextChannel textChannel = await Context.Guild.CreateTextChannelAsync(key.Name.Replace("Event", ""), o => o.CategoryId = categoryChannel.Id);
+                MutableKeyValuePair<ulong?, bool> kpv = (MutableKeyValuePair<ulong?, bool>)guild.GetType().GetProperty(key.Name).GetValue(guild);
+                kpv.Key = textChannel.Id;
+                guild.GetType().GetProperty(key.Name).SetValue(guild, kpv);
+                
             }
 
             guild.CategoryId = categoryChannel.Id;
@@ -95,7 +101,17 @@ namespace Auditor.Commands
                 await channel.DeleteAsync();
             }
 
+            foreach (PropertyInfo info in guild.GetType().GetProperties().Where(c => c.PropertyType == typeof(MutableKeyValuePair<ulong?, bool>)))
+            {
+                MutableKeyValuePair<ulong?, bool> kvp = (MutableKeyValuePair<ulong?, bool>)info.GetValue(guild);
+                kvp.Key = null;
+                guild.GetType().GetProperty(info.Name).SetValue(guild, kvp);
+            }
+
             await categoryChannel.DeleteAsync();
+            guild.CategoryId = 0;
+
+            await Database.UpdateGuild(guild);
 
             await SendSuccessAsync("Deleted Auditor sections.");
         }
