@@ -15,7 +15,7 @@ namespace Auditor.Handlers.Events
     {
         private readonly DatabaseService database;
         private readonly DiscordShardedClient shard;
-        private readonly ILogger logger = Log.ForContext<RoleCreatedHandler>();
+        private readonly ILogger logger = Log.ForContext<RoleDeletedHandler>();
 
         public RoleDeletedHandler(DiscordShardedClient s, DatabaseService d)
         {
