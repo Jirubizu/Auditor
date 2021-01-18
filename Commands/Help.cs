@@ -76,7 +76,7 @@ namespace Auditor.Commands
                     foreach (ParameterInfo commandParameter in command.Parameters)
                     {
                         paras.Append(
-                            $"[{StringUtilities.TypeFormat(commandParameter.Type.Name)} {commandParameter.Name}]");
+                            $"[{StringUtilities.TypeFormat(commandParameter.Type.Name)} {commandParameter.Name}] ");
                     }
 
                     builder.AppendLine(

@@ -34,11 +34,34 @@ namespace Auditor.Commands
             }
             else
             {
-                MutableKeyValuePair<ulong?, bool> kpv = (MutableKeyValuePair<ulong?, bool>)guild.GetType().GetProperty(info.Name).GetValue(guild);
+                MutableKeyValuePair<ulong?, bool> kpv = (MutableKeyValuePair<ulong?, bool>)guild.GetType().GetProperty(info.Name)?.GetValue(guild);
                 kpv.Value = !kpv.Value;
                 kpv.Key = channel;
-                guild.GetType().GetProperty(info.Name).SetValue(guild, kpv);
+                guild.GetType().GetProperty(info.Name)?.SetValue(guild, kpv);
                 await Database.UpdateGuild(guild);
+            }
+        }
+        
+        [Command("toggle"), Summary("Change the state of multiple events"), Alias("t")]
+        public async Task Toggle(params Events[] eventToggle)
+        {
+            GuildBson guild = await Database.LoadRecordsByGuildId(Context.Guild.Id);
+
+            foreach (Events e in eventToggle)
+            {
+                PropertyInfo info = typeof(GuildBson).GetProperties().FirstOrDefault(o => string.Equals(o.Name, e+"Event", StringComparison.InvariantCultureIgnoreCase));
+                if (info == null)
+                {
+                    await SendErrorAsync($"Failed getting {e}, make sure you type the right event name");
+                }
+                else
+                {
+                    MutableKeyValuePair<ulong?, bool> kpv = (MutableKeyValuePair<ulong?, bool>)guild.GetType().GetProperty(info.Name)?.GetValue(guild);
+                    kpv.Value = !kpv.Value;
+                    kpv.Key = null;
+                    guild.GetType().GetProperty(info.Name)?.SetValue(guild, kpv);
+                    await Database.UpdateGuild(guild);
+                }
             }
         }
         

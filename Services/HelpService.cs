@@ -31,7 +31,7 @@ namespace Auditor.Services
                 foreach (ParameterInfo parameter in command.Parameters)
                 {
                     if (!parameter.Type.IsEnum) continue;
-                    if (!AvailableEnums.ContainsKey(parameter.Type.Name))
+                    if (!AvailableEnums.ContainsKey(parameter.Type.Name.ToLowerInvariant()))
                     {
                         AvailableEnums.Add(parameter.Type.Name.ToLowerInvariant(), parameter.Type);
                     }
