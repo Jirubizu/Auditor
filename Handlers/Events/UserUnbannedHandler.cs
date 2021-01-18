@@ -1,7 +1,7 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class UserUnbannedHandler: EventHandler
+    public class UserUnbannedHandler : IEventHandler
     {
-        
+
     }
 }

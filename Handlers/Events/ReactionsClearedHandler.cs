@@ -1,7 +1,7 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class ReactionsClearedHandler: EventHandler
+    public class ReactionsClearedHandler: IEventHandler
     {
-        
+
     }
 }

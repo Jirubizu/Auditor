@@ -9,7 +9,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using EventHandler = Auditor.Handlers.EventHandler;
 
 namespace Auditor
 {
@@ -41,21 +40,20 @@ namespace Auditor
         public async Task SetupAsync(string configLoc)
         {
             // Find a neater way of checking if the database is down.
-            using(TcpClient tcpClient = new ())
+            using (TcpClient tcpClient = new())
             {
-                try 
+                try
                 {
                     await tcpClient.ConnectAsync("localhost", 27017);
                     logger.Information("Database is active");
-                } 
-                catch (Exception) 
+                }
+                catch (Exception)
                 {
                     logger.Fatal("Could not connect to the database. Make sure your database running");
                     throw;
                 }
-                
             }
-            
+
             config = new ConfigService(configLoc);
             helpService = new HelpService(command);
             await client.LoginAsync(TokenType.Bot, config.Config.Token);
@@ -64,15 +62,20 @@ namespace Auditor
             client.Log += LogAsync;
 
             IServiceProvider services = SetupServices();
-            
 
             CommandHandler commandHandler = services.GetRequiredService<CommandHandler>();
             await commandHandler.SetupAsync();
 
+            foreach (Type handler in typeof(IEventHandler).Assembly.GetTypes()
+                .Where(h => h.GetInterfaces().Contains(typeof(IEventHandler))))
+            {
+                services.GetRequiredService(handler);
+                // object instance = Activator.CreateInstance(handler);
+            }
+
             helpService.Setup();
 
             await Task.Delay(-1);
-            
         }
 
         private IServiceProvider SetupServices()
@@ -86,8 +89,9 @@ namespace Auditor
             collection.AddSingleton<CommandHandler>();
             collection.AddSingleton<DatabaseService>();
             collection.AddSingleton<PaginationService>();
-
-            foreach (Type handler in typeof(EventHandler).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(EventHandler))))
+            
+            foreach (Type handler in typeof(IEventHandler).Assembly.GetTypes()
+                .Where(h => h.GetInterfaces().Contains(typeof(IEventHandler))))
             {
                 collection.AddSingleton(handler);
             }

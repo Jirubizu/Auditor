@@ -1,7 +1,7 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class UserVoiceStateUpdatedHandler: EventHandler
+    public class UserVoiceStateUpdatedHandler : IEventHandler
     {
-        
+
     }
 }

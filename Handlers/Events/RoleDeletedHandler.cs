@@ -1,7 +1,7 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class RoleDeletedHandler: EventHandler
+    public class RoleDeletedHandler: IEventHandler
     {
-        
+
     }
 }

@@ -1,7 +1,6 @@
 ﻿namespace Auditor.Handlers
 {
-    public class EventHandler
+    public interface IEventHandler
     {
-        
     }
 }

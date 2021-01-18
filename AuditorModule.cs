@@ -61,5 +61,7 @@ namespace Auditor
 
             return await Context.Channel.SendMessageAsync("", false, embed);
         }
+        
+        
     }
 }

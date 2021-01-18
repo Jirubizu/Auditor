@@ -1,7 +1,7 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class UserLeftHandler: EventHandler
+    public class UserLeftHandler : IEventHandler
     {
-        
+
     }
 }

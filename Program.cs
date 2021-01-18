@@ -12,7 +12,7 @@ namespace Auditor
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .Enrich.FromLogContext()
-                .WriteTo.Console(outputTemplate:"[{Timestamp:HH:mm:ss} {Level:u3}] {Message} (at {SourceContext}){NewLine})")
+                .WriteTo.Console(outputTemplate:"[{Timestamp:HH:mm:ss} {Level:u3}] {Message} (at {SourceContext}){NewLine}")
                 .CreateLogger();
             try
             {
