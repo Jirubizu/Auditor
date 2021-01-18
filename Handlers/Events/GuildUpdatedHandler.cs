@@ -29,12 +29,12 @@ namespace Auditor.Handlers.Events
         {
             GuildBson guild = await database.LoadRecordsByGuildId(arg1.Id);
             
-            if (guild.GuildMemberUpdatedEvent.Key == null)
+            if (guild.GuildUpdatedEvent.Key == null)
             {
                 return;
             }
 
-            if (!(await this.shard.Rest.GetChannelAsync((ulong) guild.GuildMemberUpdatedEvent.Key) is RestTextChannel restTextChannel))
+            if (!(await this.shard.Rest.GetChannelAsync((ulong) guild.GuildUpdatedEvent.Key) is RestTextChannel restTextChannel))
             {
                 logger.Warning("restTextChannel is null");
                 return;
