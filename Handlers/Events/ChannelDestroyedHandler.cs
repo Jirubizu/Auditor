@@ -6,19 +6,22 @@ using Auditor.Structures;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using Serilog;
 
 namespace Auditor.Handlers.Events
 {
-    public class ChannelDestroyedHandler : IEventHandler
+    public class ChannelDestroyedHandler : EventHandler
     {
         private readonly DatabaseService database;
         private readonly DiscordShardedClient shard;
+        private readonly ILogger logger = Log.ForContext<ChannelDestroyedHandler>();
 
         public ChannelDestroyedHandler(DiscordShardedClient s, DatabaseService d)
         {
             this.shard = s;
             this.database = d;
             this.shard.ChannelDestroyed += ShardOnChannelDestroyed;
+            logger.Information("Registered");
         }
 
         private async Task ShardOnChannelDestroyed(SocketChannel arg)
@@ -31,11 +34,8 @@ namespace Auditor.Handlers.Events
             {
                 case SocketTextChannel socketTextChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketTextChannel.Guild.Id);
-                    if (guild.ChannelDestroyedEvent.Key == null) return;
-                    restTextChannel =
-                        await this.shard.Rest.GetChannelAsync((ulong) guild.ChannelDestroyedEvent.Key) as RestTextChannel;
-
-                    if (restTextChannel == null) return;
+                    
+                    if (!GetRestTextChannel(this.shard, guild.ChannelDestroyedEvent.Key, out restTextChannel)) return;
 
                     fields = new List<EmbedFieldBuilder>
                     {
@@ -58,11 +58,8 @@ namespace Auditor.Handlers.Events
                     break;
                 case SocketVoiceChannel socketVoiceChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketVoiceChannel.Guild.Id);
-                    if (guild.ChannelDestroyedEvent.Key == null) return;
-                    restTextChannel =
-                        await this.shard.Rest.GetChannelAsync((ulong) guild.ChannelDestroyedEvent.Key) as RestTextChannel;
-
-                    if (restTextChannel == null) return;
+                    
+                    if (!GetRestTextChannel(this.shard, guild.ChannelDestroyedEvent.Key, out restTextChannel)) return;
 
                     fields = new List<EmbedFieldBuilder>
                     {

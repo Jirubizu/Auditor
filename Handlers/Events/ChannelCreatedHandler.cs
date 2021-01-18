@@ -6,19 +6,22 @@ using Auditor.Structures;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
+using Serilog;
 
 namespace Auditor.Handlers.Events
 {
-    public class ChannelCreatedHandler : IEventHandler
+    public class ChannelCreatedHandler : EventHandler
     {
         private readonly DatabaseService database;
         private readonly DiscordShardedClient shard;
+        private readonly ILogger logger = Log.ForContext<ChannelCreatedHandler>();
 
         public ChannelCreatedHandler(DiscordShardedClient s, DatabaseService d)
         {
             this.shard = s;
             this.database = d;
             this.shard.ChannelCreated += ShardOnChannelCreated;
+            logger.Information("Registered");
         }
 
         private async Task ShardOnChannelCreated(SocketChannel arg)
@@ -31,11 +34,8 @@ namespace Auditor.Handlers.Events
             {
                 case SocketTextChannel socketTextChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketTextChannel.Guild.Id);
-                    if (guild.ChannelCreatedEvent.Key == null) return;
-                    restTextChannel =
-                        await this.shard.Rest.GetChannelAsync((ulong) guild.ChannelCreatedEvent.Key) as RestTextChannel;
 
-                    if (restTextChannel == null) return;
+                    if (!GetRestTextChannel(this.shard, guild.ChannelCreatedEvent.Key, out restTextChannel)) return;
 
                     fields = new List<EmbedFieldBuilder>
                     {
@@ -55,14 +55,13 @@ namespace Auditor.Handlers.Events
                             Value = "Text Channel"
                         }
                     };
+
+
                     break;
                 case SocketVoiceChannel socketVoiceChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketVoiceChannel.Guild.Id);
-                    if (guild.ChannelCreatedEvent.Key == null) return;
-                    restTextChannel =
-                        await this.shard.Rest.GetChannelAsync((ulong) guild.ChannelCreatedEvent.Key) as RestTextChannel;
 
-                    if (restTextChannel == null) return;
+                    if (!GetRestTextChannel(this.shard, guild.ChannelCreatedEvent.Key, out restTextChannel)) return;
 
                     fields = new List<EmbedFieldBuilder>
                     {
@@ -85,6 +84,8 @@ namespace Auditor.Handlers.Events
                             IsInline = true
                         }
                     };
+
+
                     break;
                 default:
                     return;
@@ -94,7 +95,7 @@ namespace Auditor.Handlers.Events
             {
                 Color = Color.Blue,
                 Fields = fields,
-                Footer = new EmbedFooterBuilder{Text = "Created at " + DateTime.Now}
+                Footer = new EmbedFooterBuilder {Text = "Created at " + DateTime.Now}
             };
             await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
         }

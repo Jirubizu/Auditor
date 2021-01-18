@@ -13,7 +13,7 @@ using Serilog;
 
 namespace Auditor.Handlers.Events
 {
-    public class ChannelUpdatedHandler : IEventHandler
+    public class ChannelUpdatedHandler : EventHandler
     {
         private readonly DatabaseService database;
         private readonly DiscordShardedClient shard;
@@ -24,6 +24,7 @@ namespace Auditor.Handlers.Events
             this.shard = s;
             this.database = d;
             this.shard.ChannelUpdated += ShardOnChannelUpdated;
+            logger.Information("Registered");
         }
 
         private async Task ShardOnChannelUpdated(SocketChannel oldChannel, SocketChannel newChannel)
@@ -35,15 +36,13 @@ namespace Auditor.Handlers.Events
             {
                 new EmbedFieldBuilder {Name = "Channel", Value = $"<#{oldChannel.Id}>"}
             };
-
+            // TODO: Fix permissions overwrites, should output what permissions are changed.
             switch (oldChannel)
             {
                 case SocketTextChannel socketTextChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketTextChannel.Guild.Id);
-                    if (guild.ChannelUpdatedEvent.Key == null) return;
-                    restTextChannel =
-                        await this.shard.Rest.GetChannelAsync((ulong) guild.ChannelUpdatedEvent.Key) as RestTextChannel;
-                    if (restTextChannel == null) return;
+                    
+                    if (!GetRestTextChannel(this.shard, guild.ChannelUpdatedEvent.Key, out restTextChannel)) return;
 
                     SocketTextChannel newSocketTextChannel = newChannel as SocketTextChannel;
                     foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(socketTextChannel,
@@ -61,11 +60,8 @@ namespace Auditor.Handlers.Events
 
                 case SocketVoiceChannel socketVoiceChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketVoiceChannel.Guild.Id);
-                    if (guild.ChannelUpdatedEvent.Key == null) return;
-
-                    restTextChannel =
-                        await this.shard.Rest.GetChannelAsync((ulong) guild.ChannelUpdatedEvent.Key) as RestTextChannel;
-                    if (restTextChannel == null) return;
+                    
+                    if (!GetRestTextChannel(this.shard, guild.ChannelUpdatedEvent.Key, out restTextChannel)) return;
 
                     SocketVoiceChannel newSocketVoiceChannel = newChannel as SocketVoiceChannel;
                     foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(socketVoiceChannel,

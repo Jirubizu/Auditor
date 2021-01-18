@@ -1,6 +1,6 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class ReactionAddedHandler: IEventHandler
+    public class ReactionAddedHandler: EventHandler
     {
 
     }

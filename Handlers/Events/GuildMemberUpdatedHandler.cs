@@ -12,7 +12,7 @@ using Serilog;
 
 namespace Auditor.Handlers.Events
 {
-    public class GuildMemberUpdatedHandler : IEventHandler
+    public class GuildMemberUpdatedHandler : EventHandler
     {
         private readonly DiscordShardedClient shard;
         private readonly DatabaseService database;
@@ -23,41 +23,34 @@ namespace Auditor.Handlers.Events
             this.database = d;
             s.GuildMemberUpdated += ShardOnGuildMemberUpdated;
             shard = s;
+            logger.Information("Registered");
         }
         
         private async Task ShardOnGuildMemberUpdated(SocketGuildUser prevUser, SocketGuildUser newUser)
         {
             GuildBson guild = await database.LoadRecordsByGuildId(prevUser.Guild.Id);
-            
-            if (guild.GuildMemberUpdatedEvent.Key == null)
-            {
-                return;
-            }
 
-            if (!(await this.shard.Rest.GetChannelAsync((ulong) guild.GuildMemberUpdatedEvent.Key) is RestTextChannel restTextChannel))
+            if (GetRestTextChannel(this.shard, guild.GuildMemberUpdatedEvent.Key, out RestTextChannel restTextChannel))
             {
-                logger.Warning("restTextChannel is null");
-                return;
-            }
+                List<EmbedFieldBuilder> fields = new()
+                {
+                    new EmbedFieldBuilder {Name = "User Id", Value = newUser.Id}
+                };
             
-            List<EmbedFieldBuilder> fields = new()
-            {
-                new EmbedFieldBuilder {Name = "User Id", Value = newUser.Id}
-            };
-            
-            foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(prevUser, newUser, new[] {"MutualGuilds", "Roles"}))
-            {
-                fields.Add(new EmbedFieldBuilder{Name = info.Name, Value = $"{info.GetValue(prevUser) ?? "null"} to {info.GetValue(newUser) ?? "null"}"});
+                foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(prevUser, newUser, new[] {"MutualGuilds", "Roles", "JoinedAt"}))
+                {
+                    fields.Add(new EmbedFieldBuilder{Name = info.Name, Value = $"{info.GetValue(prevUser) ?? "null"} to {info.GetValue(newUser) ?? "null"}"});
+                }
+
+                EmbedBuilder embedBuilder = new()
+                {
+                    Color = Color.Blue,
+                    Fields = fields,
+                    Footer = new EmbedFooterBuilder {Text = "Modified at " + DateTime.Now}
+                };
+
+                await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
             }
-
-            EmbedBuilder embedBuilder = new()
-            {
-                Color = Color.Blue,
-                Fields = fields,
-                Footer = new EmbedFooterBuilder {Text = "Modified at " + DateTime.Now}
-            };
-
-            await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
         }
     }
 }

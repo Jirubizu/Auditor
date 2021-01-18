@@ -13,7 +13,7 @@ using Serilog;
 
 namespace Auditor.Handlers.Events
 {
-    public class RoleCreatedHandler : IEventHandler
+    public class RoleCreatedHandler : EventHandler
     {
         private readonly DatabaseService database;
         private readonly DiscordShardedClient shard;
@@ -24,36 +24,28 @@ namespace Auditor.Handlers.Events
             this.database = d;
             this.shard = s;
             this.shard.RoleCreated += ShardOnRoleCreated;
+            logger.Information("Registered");
         }
 
         private async Task ShardOnRoleCreated(SocketRole arg)
         {
             GuildBson guild = await database.LoadRecordsByGuildId(arg.Guild.Id);
 
-            if (guild.RoleCreatedEvent.Key == null)
+            if (GetRestTextChannel(this.shard, guild.RoleCreatedEvent.Key, out RestTextChannel restTextChannel))
             {
-                return;
-            }
-
-            if (!(await this.shard.Rest.GetChannelAsync((ulong) guild.RoleCreatedEvent.Key) is RestTextChannel
-                restTextChannel))
-            {
-                logger.Warning("restTextChannel is null");
-                return;
-            }
-
-            EmbedBuilder embedBuilder = new()
-            {
-                Color = arg.Color,
-                Fields = new List<EmbedFieldBuilder>
+                EmbedBuilder embedBuilder = new()
                 {
-                    new() {Name = "Role", Value = arg.Name},
-                    new() {Name = "Permissions", Value = arg.Permissions.ToList().Aggregate("", (current, permission) => current + permission + ", ")}
-                },
-                Footer = new EmbedFooterBuilder {Text = "Created at " + DateTime.Now}
-            };
+                    Color = arg.Color,
+                    Fields = new List<EmbedFieldBuilder>
+                    {
+                        new() {Name = "Role", Value = arg.Name},
+                        new() {Name = "Permissions", Value = arg.Permissions.ToList().Aggregate("", (current, permission) => current + permission + ", ")}
+                    },
+                    Footer = new EmbedFooterBuilder {Text = "Created at " + DateTime.Now}
+                };
 
-            await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
+                await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
+            }
         }
     }
 }

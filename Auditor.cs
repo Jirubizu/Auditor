@@ -9,6 +9,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using EventHandler = Auditor.Handlers.EventHandler;
 
 namespace Auditor
 {
@@ -66,8 +67,8 @@ namespace Auditor
             CommandHandler commandHandler = services.GetRequiredService<CommandHandler>();
             await commandHandler.SetupAsync();
 
-            foreach (Type handler in typeof(IEventHandler).Assembly.GetTypes()
-                .Where(h => h.GetInterfaces().Contains(typeof(IEventHandler))))
+            foreach (Type handler in typeof(EventHandler).Assembly.GetTypes()
+                .Where(h => h.BaseType == typeof(EventHandler)))
             {
                 services.GetRequiredService(handler);
                 // object instance = Activator.CreateInstance(handler);
@@ -90,8 +91,8 @@ namespace Auditor
             collection.AddSingleton<DatabaseService>();
             collection.AddSingleton<PaginationService>();
             
-            foreach (Type handler in typeof(IEventHandler).Assembly.GetTypes()
-                .Where(h => h.GetInterfaces().Contains(typeof(IEventHandler))))
+            foreach (Type handler in typeof(EventHandler).Assembly.GetTypes()
+                .Where(h => h.BaseType == typeof(EventHandler)))
             {
                 collection.AddSingleton(handler);
             }

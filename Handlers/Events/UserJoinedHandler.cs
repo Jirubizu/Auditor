@@ -1,6 +1,6 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class UserJoinedHandler : IEventHandler
+    public class UserJoinedHandler : EventHandler
     {
 
     }

@@ -12,7 +12,7 @@ using Serilog;
 
 namespace Auditor.Handlers.Events
 {
-    public class GuildUpdatedHandler : IEventHandler
+    public class GuildUpdatedHandler : EventHandler
     {
         private readonly DatabaseService database;
         private readonly DiscordShardedClient shard;
@@ -23,38 +23,34 @@ namespace Auditor.Handlers.Events
             this.database = d;
             s.GuildUpdated += OnGuildUpdated;
             shard = s;
+            logger.Information("Registered");
         }
 
         private async Task OnGuildUpdated(SocketGuild arg1, SocketGuild arg2)
         {
             GuildBson guild = await database.LoadRecordsByGuildId(arg1.Id);
-            
-            if (guild.GuildUpdatedEvent.Key == null)
+
+            if (GetRestTextChannel(this.shard, guild.GuildUpdatedEvent.Key, out RestTextChannel restTextChannel))
             {
-                return;
+                List<EmbedFieldBuilder> fields = new();
+
+                foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(arg1, arg2, new[] {""}))
+                {
+                    fields.Add(new EmbedFieldBuilder
+                    {
+                        Name = info.Name, Value = $"{info.GetValue(arg1) ?? "null"} to {info.GetValue(arg2) ?? "null"}"
+                    });
+                }
+
+                EmbedBuilder embedBuilder = new()
+                {
+                    Color = Color.Blue,
+                    Fields = fields,
+                    Footer = new EmbedFooterBuilder {Text = "Modified at " + DateTime.Now}
+                };
+
+                await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
             }
-
-            if (!(await this.shard.Rest.GetChannelAsync((ulong) guild.GuildUpdatedEvent.Key) is RestTextChannel restTextChannel))
-            {
-                logger.Warning("restTextChannel is null");
-                return;
-            }
-
-            List<EmbedFieldBuilder> fields = new();
-
-            foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(arg1, arg2, new []{""}))
-            {
-                fields.Add(new EmbedFieldBuilder{Name = info.Name, Value = $"{info.GetValue(arg1) ?? "null"} to {info.GetValue(arg2) ?? "null"}"});
-            }
-
-            EmbedBuilder embedBuilder = new()
-            {
-                Color = Color.Blue,
-                Fields = fields,
-                Footer = new EmbedFooterBuilder {Text = "Modified at " + DateTime.Now}
-            };
-
-            await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
         }
     }
 }

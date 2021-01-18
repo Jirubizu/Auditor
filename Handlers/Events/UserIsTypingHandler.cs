@@ -1,6 +1,6 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class UserIsTypingHandler : IEventHandler
+    public class UserIsTypingHandler : EventHandler
     {
         // Possibly can remove
     }

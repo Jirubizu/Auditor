@@ -1,6 +1,6 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class MessagesBulkDeletedHandler: IEventHandler
+    public class MessagesBulkDeletedHandler: EventHandler
     {
 
     }

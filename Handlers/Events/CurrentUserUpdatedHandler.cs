@@ -5,7 +5,7 @@ using Serilog;
 
 namespace Auditor.Handlers.Events
 {
-    public class CurrentUserUpdatedHandler : IEventHandler
+    public class CurrentUserUpdatedHandler : EventHandler
     {
         private readonly DatabaseService database;
         private readonly DiscordShardedClient shard;
@@ -16,6 +16,7 @@ namespace Auditor.Handlers.Events
             this.shard = s;
             this.database = d;
             this.shard.CurrentUserUpdated += ShardOnCurrentUserUpdated;
+            logger.Information("Registered");
         }
 
         private Task ShardOnCurrentUserUpdated(SocketSelfUser arg1, SocketSelfUser arg2)

@@ -1,6 +1,6 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class VoiceServerUpdatedHandler : IEventHandler
+    public class VoiceServerUpdatedHandler : EventHandler
     {
 
     }

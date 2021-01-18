@@ -1,6 +1,6 @@
 ﻿namespace Auditor.Handlers.Events
 {
-    public class MessageUpdatedHandler: IEventHandler
+    public class MessageUpdatedHandler: EventHandler
     {
 
     }
