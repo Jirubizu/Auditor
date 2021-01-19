@@ -14,17 +14,17 @@ namespace Auditor.Handlers.Events
     {
         private readonly DatabaseService database;
         private readonly DiscordShardedClient shard;
-        private readonly ILogger logger = Log.ForContext<UserJoinedHandler>();
+        private readonly ILogger logger = Log.ForContext<UserLeftHandler>();
 
         public UserLeftHandler(DiscordShardedClient s, DatabaseService d)
         {
             this.shard = s;
             this.database = d;
             this.logger.Information("Registered");
-            this.shard.UserJoined += ShardOnUserJoined;
+            this.shard.UserLeft += ShardOnUserLeft;
         }
 
-        private async Task ShardOnUserJoined(SocketGuildUser user)
+        private async Task ShardOnUserLeft(SocketGuildUser user)
         {
             GuildBson guild = await this.database.LoadRecordsByGuildId(user.Guild.Id);
 
@@ -49,7 +49,7 @@ namespace Auditor.Handlers.Events
                     Color = Color.Blue,
                     Fields = fields,
                     ImageUrl = user.GetAvatarUrl(),
-                    Footer = new EmbedFooterBuilder {Text = "Joined on " + DateTime.Now}
+                    Footer = new EmbedFooterBuilder {Text = "Left on " + DateTime.Now}
                 };
                 
                 await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
