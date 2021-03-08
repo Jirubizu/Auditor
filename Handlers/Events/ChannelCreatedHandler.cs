@@ -95,7 +95,7 @@ namespace Auditor.Handlers.Events
             {
                 Color = Color.Blue,
                 Fields = fields,
-                Footer = new EmbedFooterBuilder {Text = "Created at " + DateTime.Now}
+                Footer = new EmbedFooterBuilder {Text = $"Created at {DateTime.UtcNow} UTC"}
             };
             await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
         }

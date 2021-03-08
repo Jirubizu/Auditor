@@ -34,10 +34,17 @@ namespace Auditor.Handlers.Events
             {
                 List<EmbedFieldBuilder> fields = new();
 
-                foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(oldRole, newRole, new[] {"Members"}))
+                foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(oldRole, newRole,
+                    new[] {"Members"}))
                 {
-                    fields.Add(new EmbedFieldBuilder{Name = $"Old {info.Name}", Value = info.GetValue(oldRole), IsInline = true});
-                    fields.Add(new EmbedFieldBuilder{Name = $"New {info.Name}", Value = info.GetValue(newRole), IsInline = true});
+                    fields.Add(new EmbedFieldBuilder
+                    {
+                        Name = $"Old {info.Name}", Value = info.GetValue(oldRole), IsInline = true
+                    });
+                    fields.Add(new EmbedFieldBuilder
+                    {
+                        Name = $"New {info.Name}", Value = info.GetValue(newRole), IsInline = true
+                    });
                     fields.Add(new EmbedFieldBuilder {Name = "|", Value = "|", IsInline = true});
                 }
 
@@ -45,7 +52,7 @@ namespace Auditor.Handlers.Events
                 {
                     Color = newRole.Color,
                     Fields = fields,
-                    Footer = new EmbedFooterBuilder {Text = "Modified on " + DateTime.Now}
+                    Footer = new EmbedFooterBuilder {Text = $"Modified on {DateTime.UtcNow} UTC "}
                 };
 
                 await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());

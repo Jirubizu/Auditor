@@ -86,7 +86,7 @@ namespace Auditor.Handlers.Events
             {
                 Color = Color.Blue,
                 Fields = fields,
-                Footer = new EmbedFooterBuilder {Text = "Modified at " + DateTime.Now}
+                Footer = new EmbedFooterBuilder {Text = $"Modified at {DateTime.UtcNow} UTC"}
             };
 
             await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());

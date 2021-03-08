@@ -49,7 +49,7 @@ namespace Auditor.Handlers.Events
                     Color = Color.Green,
                     Fields = fields,
                     ImageUrl = user.GetAvatarUrl(),
-                    Footer = new EmbedFooterBuilder {Text = "Unbanned on " + DateTime.Now}
+                    Footer = new EmbedFooterBuilder {Text = $"Unbanned on {DateTime.UtcNow} UTC"}
                 };
                 
                 await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());

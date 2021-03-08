@@ -49,7 +49,7 @@ namespace Auditor.Handlers.Events
                     Color = Color.Blue,
                     Fields = fields,
                     ImageUrl = user.GetAvatarUrl(),
-                    Footer = new EmbedFooterBuilder {Text = "Left on " + DateTime.Now}
+                    Footer = new EmbedFooterBuilder {Text = $"Left on {DateTime.UtcNow} UTC"}
                 };
                 
                 await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());

@@ -39,7 +39,7 @@ namespace Auditor.Handlers.Events
                         new() {Name = "Role", Value = arg.Name},
                         new() {Name = "Permissions", Value = arg.Permissions.ToList().Aggregate("", (current, permission) => current + permission + ", ")}
                     },
-                    Footer = new EmbedFooterBuilder {Text = "Deleted at " + DateTime.Now}
+                    Footer = new EmbedFooterBuilder {Text = $"Deleted at {DateTime.UtcNow} UTC"}
                 };
 
                 await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
