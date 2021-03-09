@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Auditor.Services;
+using Auditor.Structures;
 using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using Serilog;
 
@@ -20,9 +23,22 @@ namespace Auditor.Handlers.Events
             logger.Information("Registered");
         }
 
-        private Task ShardOnReactionRemoved(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel textChannel, SocketReaction reaction)
+        private async Task ShardOnReactionRemoved(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel textChannel, SocketReaction reaction)
         {
-            throw new System.NotImplementedException();
+            GuildBson guild = await this.database.LoadRecordsByGuildId(((SocketTextChannel) textChannel).Guild.Id);
+
+            if (GetRestTextChannel(this.shard, guild.ReactionAddedEvent.Key, out RestTextChannel restTextChannel))
+            {
+                EmbedBuilder embedBuilder = new()
+                {
+                    Title = $"{reaction.User.Value.Mention} removed a reaction",
+                    Description = $"{reaction.Emote.Name} was removed from Message ID: {message.Value.Id} in {message.Value.Channel.Name}",
+                    Color = Color.Blue,
+                    Footer = new EmbedFooterBuilder{Text = $"User ID: {reaction.UserId}, Message ID {message.Value.Id}, removed at {DateTime.UtcNow} UTC"}
+                };
+                
+                await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
+            }
         }
     }
 }

@@ -32,7 +32,7 @@ private readonly DatabaseService database;
                 EmbedBuilder embedBuilder = new()
                 {
                     Title = $"{reaction.User.Value.Mention} added a reaction",
-                    Description = $"{reaction.Emote.Name} was added to Message ID: {message.Value.Id}",
+                    Description = $"{reaction.Emote.Name} was added to Message ID: {message.Value.Id} in {message.Value.Channel.Name}",
                     Color = Color.Blue,
                     Footer = new EmbedFooterBuilder{Text = $"User ID: {reaction.UserId}, Message ID {message.Value.Id}, added at {DateTime.UtcNow} UTC"}
                 };
