@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Auditor.Services;
+using Auditor.Structures;
 using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using Serilog;
 
@@ -20,9 +23,22 @@ private readonly DatabaseService database;
             logger.Information("Registered");
         }
 
-        private Task ShardOnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel textChannel, SocketReaction reaction)
+        private async Task ShardOnReactionAdded(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel textChannel, SocketReaction reaction)
         {
-            throw new System.NotImplementedException();
+            GuildBson guild = await this.database.LoadRecordsByGuildId(((SocketTextChannel) textChannel).Guild.Id);
+
+            if (GetRestTextChannel(this.shard, guild.ReactionAddedEvent.Key, out RestTextChannel restTextChannel))
+            {
+                EmbedBuilder embedBuilder = new()
+                {
+                    Title = $"{reaction.User.Value.Mention} added a reaction",
+                    Description = $"{reaction.Emote.Name} was added to Message ID: {message.Value.Id}",
+                    Color = Color.Blue,
+                    Footer = new EmbedFooterBuilder{Text = $"User ID: {reaction.UserId}, Message ID {message.Value.Id}, added at {DateTime.UtcNow} UTC"}
+                };
+                
+                await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
+            }
         }
     }
 }
