@@ -27,9 +27,9 @@ namespace Auditor.Services
         }
 
         // Loading Records
-        public async Task<List<GuildBson>> LoadRecords(string table)
+        public async Task<List<GuildBson>> LoadRecords()
         {
-            var collection = mongoDatabase.GetCollection<GuildBson>(table);
+            var collection = mongoDatabase.GetCollection<GuildBson>("guilds");
             return await collection.Find(new BsonDocument()).ToListAsync();
         }
 
