@@ -29,6 +29,11 @@ namespace Auditor.Handlers.Events
         private async Task ShardOnMessageUpdated(Cacheable<IMessage, ulong> cachedMessage, SocketMessage newMessage,
             ISocketMessageChannel textChannel)
         {
+            if (cachedMessage.Value.Author.IsBot)
+            {
+                return;
+            }
+
             GuildBson guild = await this.database.LoadRecordsByGuildId(((SocketTextChannel) textChannel).Guild.Id);
 
             if (GetRestTextChannel(this.shard, guild.MessageUpdatedEvent.Key, out RestTextChannel restTextChannel))
@@ -39,7 +44,8 @@ namespace Auditor.Handlers.Events
                     Author = new EmbedAuthorBuilder
                     {
                         Name = newMessage.Author.Mention,
-                        IconUrl = newMessage.Author.GetAvatarUrl()
+                        IconUrl = newMessage.Author.GetAvatarUrl(),
+                        Url = newMessage.GetJumpUrl()
                     },
                     Title = "Message Updated: Before",
                     Description = cachedMessage.Value.Content,
@@ -55,7 +61,8 @@ namespace Auditor.Handlers.Events
                     Author = new EmbedAuthorBuilder
                     {
                         Name = newMessage.Author.Mention,
-                        IconUrl = newMessage.Author.GetAvatarUrl()
+                        IconUrl = newMessage.Author.GetAvatarUrl(),
+                        Url = newMessage.GetJumpUrl()
                     },
                     Title = "Message Updated: After",
                     Description = newMessage.Content,
@@ -66,7 +73,7 @@ namespace Auditor.Handlers.Events
                     }
                 });
 
-                PaginatedMessage paginatedMessage = new(pages, "Message Updated", Color.Blue);
+                PaginatedMessage paginatedMessage = new(pages, "Message Updated", Color.Blue, null, new AppearanceOptions{Style = DisplayStyle.Minimal});
                 await this.paginationService.SendMessageAsync(restTextChannel, paginatedMessage);
             }
         }
