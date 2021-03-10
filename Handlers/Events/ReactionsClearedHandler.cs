@@ -31,7 +31,7 @@ namespace Auditor.Handlers.Events
             {
                 EmbedBuilder embedBuilder = new()
                 {
-                    Title = $"Reactions Cleared",
+                    Title = "Reactions Cleared",
                     Description = $"All reactions from Message ID: {message.Value.Id} in {message.Value.Channel.Name} where removed.",
                     Color = Color.Blue,
                     Footer = new EmbedFooterBuilder{Text = $"Message ID {message.Value.Id}, removed at {DateTime.UtcNow} UTC"}

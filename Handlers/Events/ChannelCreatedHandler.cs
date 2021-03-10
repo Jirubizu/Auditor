@@ -85,7 +85,6 @@ namespace Auditor.Handlers.Events
                         }
                     };
 
-
                     break;
                 default:
                     return;
