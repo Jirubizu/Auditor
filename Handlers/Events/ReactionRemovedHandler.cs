@@ -9,7 +9,7 @@ using Serilog;
 
 namespace Auditor.Handlers.Events
 {
-    public class ReactionRemovedHandler: EventHandler
+    public class ReactionRemovedHandler : EventHandler
     {
         private readonly DatabaseService database;
         private readonly DiscordShardedClient shard;
@@ -23,8 +23,14 @@ namespace Auditor.Handlers.Events
             logger.Information("Registered");
         }
 
-        private async Task ShardOnReactionRemoved(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel textChannel, SocketReaction reaction)
+        private async Task ShardOnReactionRemoved(Cacheable<IUserMessage, ulong> message,
+            ISocketMessageChannel textChannel, SocketReaction reaction)
         {
+            if (reaction.User.Value.IsBot)
+            {
+                return;
+            }
+
             GuildBson guild = await this.database.LoadRecordsByGuildId(((SocketTextChannel) textChannel).Guild.Id);
 
             if (GetRestTextChannel(this.shard, guild.ReactionRemovedEvent.Key, out RestTextChannel restTextChannel))
@@ -32,11 +38,16 @@ namespace Auditor.Handlers.Events
                 EmbedBuilder embedBuilder = new()
                 {
                     Title = $"{reaction.User.Value.Mention} removed a reaction",
-                    Description = $"{reaction.Emote.Name} was removed from Message ID: {message.Value.Id} in {message.Value.Channel.Name}",
+                    Description =
+                        $"{reaction.Emote.Name} was removed from Message ID: {message.Value.Id} in {message.Value.Channel.Name}",
                     Color = Color.Blue,
-                    Footer = new EmbedFooterBuilder{Text = $"User ID: {reaction.UserId}, Message ID {message.Value.Id}, removed at {DateTime.UtcNow} UTC"}
+                    Footer = new EmbedFooterBuilder
+                    {
+                        Text =
+                            $"User ID: {reaction.UserId}, Message ID {message.Value.Id}, removed at {DateTime.UtcNow} UTC"
+                    }
                 };
-                
+
                 await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
             }
         }

@@ -32,7 +32,7 @@ namespace Auditor.Handlers.Events
         {
             GuildBson guild = await this.database.LoadRecordsByGuildId(((SocketTextChannel) textChannel).Guild.Id);
 
-            if (GetRestTextChannel(this.shard, guild.MessageBulkDeletedEvent.Key, out RestTextChannel restTextChannel))
+            if (GetRestTextChannel(this.shard, guild.MessagesBulkDeletedEvent.Key, out RestTextChannel restTextChannel))
             {
                 List<EmbedBuilder> pages = new();
                 foreach (Cacheable<IMessage, ulong> message in cachedMessages)
@@ -52,7 +52,8 @@ namespace Auditor.Handlers.Events
                 }
 
                 PaginatedMessage paginatedMessage =
-                    new(pages, $"Bulk Delete from {((SocketTextChannel) textChannel).Mention}", Color.Blue);
+                    new(pages, $"Bulk Delete from {((SocketTextChannel) textChannel).Mention}", Color.Blue, null,
+                        new AppearanceOptions {Style = DisplayStyle.Minimal});
                 await this.paginationService.SendMessageAsync(restTextChannel, paginatedMessage);
             }
         }

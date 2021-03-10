@@ -42,8 +42,8 @@ namespace Auditor.Commands
             }
         }
         
-        [Command("toggle"), Summary("Change the state of multiple events"), Alias("t")]
-        public async Task Toggle(params Events[] eventToggle)
+        [Command("togglemultiple"), Summary("Change the state of multiple events"), Alias("tm")]
+        public async Task ToggleMultiple(params Events[] eventToggle)
         {
             GuildBson guild = await Database.LoadRecordsByGuildId(Context.Guild.Id);
 
@@ -74,7 +74,7 @@ namespace Auditor.Commands
             foreach ((PropertyInfo key, bool value) in GetSettingStates(guild))
             {
                 string v = value ? "🟢" : "🔴";
-                output += $"{v} | {key.Name}\n";
+                output += $"{v} | {key.Name.Replace("Event","")}\n";
             }
 
             EmbedBuilder embed = new()
