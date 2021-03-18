@@ -51,11 +51,11 @@ namespace Auditor
                 }
                 catch (Exception)
                 {
-                    logger.Fatal("Could not connect to the database. Make sure your database running");
+                    logger.Fatal("Could not connect to the database. Make sure your database is running");
                     throw;
                 }
             }
-            
+
             helpService = new HelpService(command);
             await client.LoginAsync(TokenType.Bot, configService.Config.Token);
             await client.StartAsync();
@@ -89,7 +89,7 @@ namespace Auditor
             collection.AddSingleton<CommandHandler>();
             collection.AddSingleton<DatabaseService>();
             collection.AddSingleton<PaginationService>();
-            
+
             foreach (Type handler in typeof(EventHandler).Assembly.GetTypes()
                 .Where(h => h.BaseType == typeof(EventHandler)))
             {
