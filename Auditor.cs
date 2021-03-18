@@ -17,9 +17,9 @@ namespace Auditor
     {
         private readonly DiscordShardedClient client;
         private readonly CommandService command;
-        private ConfigService config;
+        private ConfigService configService;
         private HelpService helpService;
-        private ILogger logger = Log.ForContext<Auditor>();
+        private readonly ILogger logger = Log.ForContext<Auditor>();
 
         public Auditor(DiscordShardedClient shard = null, CommandService cmd = null)
         {
@@ -40,12 +40,13 @@ namespace Auditor
 
         public async Task SetupAsync(string configLoc)
         {
+            configService = new ConfigService(configLoc);
             // Find a neater way of checking if the database is down.
             using (TcpClient tcpClient = new())
             {
                 try
                 {
-                    await tcpClient.ConnectAsync("localhost", 27017);
+                    await tcpClient.ConnectAsync(configService.Config.DatabaseIp, configService.Config.DatabasePort);
                     logger.Information("Database is active");
                 }
                 catch (Exception)
@@ -54,10 +55,9 @@ namespace Auditor
                     throw;
                 }
             }
-
-            config = new ConfigService(configLoc);
+            
             helpService = new HelpService(command);
-            await client.LoginAsync(TokenType.Bot, config.Config.Token);
+            await client.LoginAsync(TokenType.Bot, configService.Config.Token);
             await client.StartAsync();
 
             client.Log += LogAsync;
@@ -71,7 +71,6 @@ namespace Auditor
                 .Where(h => h.BaseType == typeof(EventHandler)))
             {
                 services.GetRequiredService(handler);
-                // object instance = Activator.CreateInstance(handler);
             }
 
             helpService.Setup();
@@ -85,7 +84,7 @@ namespace Auditor
             collection.AddSingleton(this);
             collection.AddSingleton(client);
             collection.AddSingleton(command);
-            collection.AddSingleton(config);
+            collection.AddSingleton(configService);
             collection.AddSingleton(helpService);
             collection.AddSingleton<CommandHandler>();
             collection.AddSingleton<DatabaseService>();
