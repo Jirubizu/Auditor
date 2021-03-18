@@ -21,10 +21,10 @@ namespace Auditor.Handlers.Events
 
         public ChannelUpdatedHandler(DiscordShardedClient s, DatabaseService d)
         {
-            this.shard = s;
             this.database = d;
+            this.shard = s;
             this.shard.ChannelUpdated += ShardOnChannelUpdated;
-            logger.Information("Registered");
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnChannelUpdated(SocketChannel oldChannel, SocketChannel newChannel)
@@ -32,21 +32,28 @@ namespace Auditor.Handlers.Events
             GuildBson guild;
             RestTextChannel restTextChannel;
             string[] channelConstantChanges = {"Users", "CachedMessages"};
+            IEnumerable<PropertyInfo> differentPropertyInfos;
+            
             List<EmbedFieldBuilder> fields = new()
             {
                 new EmbedFieldBuilder {Name = "Channel", Value = $"<#{oldChannel.Id}>"}
             };
+
             // TODO: Fix permissions overwrites, should output what permissions are changed.
             switch (oldChannel)
             {
                 case SocketTextChannel socketTextChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketTextChannel.Guild.Id);
-                    
+
                     if (!GetRestTextChannel(this.shard, guild.ChannelUpdatedEvent.Key, out restTextChannel)) return;
 
                     SocketTextChannel newSocketTextChannel = newChannel as SocketTextChannel;
-                    foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(socketTextChannel,
-                        newSocketTextChannel, channelConstantChanges))
+
+                    differentPropertyInfos = EnumeratingUtilities.GetDifferentProperties(
+                        socketTextChannel,
+                        newSocketTextChannel, channelConstantChanges);
+
+                    foreach (PropertyInfo info in differentPropertyInfos)
                     {
                         fields.Add(new EmbedFieldBuilder
                         {
@@ -60,12 +67,16 @@ namespace Auditor.Handlers.Events
 
                 case SocketVoiceChannel socketVoiceChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketVoiceChannel.Guild.Id);
-                    
+
                     if (!GetRestTextChannel(this.shard, guild.ChannelUpdatedEvent.Key, out restTextChannel)) return;
 
                     SocketVoiceChannel newSocketVoiceChannel = newChannel as SocketVoiceChannel;
-                    foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(socketVoiceChannel,
-                        newSocketVoiceChannel, channelConstantChanges))
+
+                    differentPropertyInfos = EnumeratingUtilities.GetDifferentProperties(
+                        socketVoiceChannel,
+                        newSocketVoiceChannel, channelConstantChanges);
+                        
+                    foreach (PropertyInfo info in differentPropertyInfos)
                     {
                         fields.Add(new EmbedFieldBuilder
                         {

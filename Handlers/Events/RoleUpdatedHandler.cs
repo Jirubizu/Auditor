@@ -23,12 +23,12 @@ namespace Auditor.Handlers.Events
             this.database = d;
             this.shard = s;
             this.shard.RoleUpdated += ShardOnRoleUpdated;
-            logger.Information("Registered");
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnRoleUpdated(SocketRole oldRole, SocketRole newRole)
         {
-            GuildBson guild = await database.LoadRecordsByGuildId(oldRole.Guild.Id);
+            GuildBson guild = await this.database.LoadRecordsByGuildId(oldRole.Guild.Id);
 
             if (GetRestTextChannel(this.shard, guild.RoleUpdatedEvent.Key, out RestTextChannel restTextChannel))
             {
@@ -39,11 +39,15 @@ namespace Auditor.Handlers.Events
                 {
                     fields.Add(new EmbedFieldBuilder
                     {
-                        Name = $"Old {info.Name}", Value = info.GetValue(oldRole), IsInline = true
+                        Name = $"Old {info.Name}",
+                        Value = info.GetValue(oldRole),
+                        IsInline = true
                     });
                     fields.Add(new EmbedFieldBuilder
                     {
-                        Name = $"New {info.Name}", Value = info.GetValue(newRole), IsInline = true
+                        Name = $"New {info.Name}",
+                        Value = info.GetValue(newRole),
+                        IsInline = true
                     });
                     fields.Add(new EmbedFieldBuilder {Name = "|", Value = "|", IsInline = true});
                 }

@@ -21,24 +21,24 @@ namespace Auditor.Handlers.Events
         public GuildUpdatedHandler(DiscordShardedClient s, DatabaseService d)
         {
             this.database = d;
-            s.GuildUpdated += OnGuildUpdated;
-            shard = s;
-            logger.Information("Registered");
+            this.shard = s;
+            this.shard.GuildUpdated += OnGuildUpdated;
+            this.logger.Information("Registered");
         }
 
-        private async Task OnGuildUpdated(SocketGuild arg1, SocketGuild arg2)
+        private async Task OnGuildUpdated(SocketGuild prevGuild, SocketGuild newGuild)
         {
-            GuildBson guild = await database.LoadRecordsByGuildId(arg1.Id);
+            GuildBson guild = await this.database.LoadRecordsByGuildId(prevGuild.Id);
 
             if (GetRestTextChannel(this.shard, guild.GuildUpdatedEvent.Key, out RestTextChannel restTextChannel))
             {
                 List<EmbedFieldBuilder> fields = new();
 
-                foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(arg1, arg2, new[] {""}))
+                foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(prevGuild, newGuild, new[] {""}))
                 {
                     fields.Add(new EmbedFieldBuilder
                     {
-                        Name = info.Name, Value = $"{info.GetValue(arg1) ?? "null"} to {info.GetValue(arg2) ?? "null"}"
+                        Name = info.Name, Value = $"{info.GetValue(prevGuild) ?? "null"} to {info.GetValue(newGuild) ?? "null"}"
                     });
                 }
 

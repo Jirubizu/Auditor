@@ -18,10 +18,10 @@ namespace Auditor.Handlers.Events
 
         public UserBannedHandler(DiscordShardedClient s, DatabaseService d)
         {
-            this.shard = s;
             this.database = d;
-            this.logger.Information("Registered");
+            this.shard = s;
             this.shard.UserBanned += ShardOnUserBanned;
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnUserBanned(SocketUser user, SocketGuild socketGuild)

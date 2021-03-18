@@ -20,27 +20,37 @@ namespace Auditor.Handlers.Events
             this.database = d;
             this.shard = s;
             this.shard.MessageDeleted += ShardOnMessageDeleted;
-            logger.Information("Registered");
+            this.logger.Information("Registered");
         }
 
-        private async Task ShardOnMessageDeleted(Cacheable<IMessage, ulong> cachedMessage, ISocketMessageChannel textChannel)
+        private async Task ShardOnMessageDeleted(Cacheable<IMessage, ulong> cachedMessage,
+            ISocketMessageChannel textChannel)
         {
             GuildBson guild = await this.database.LoadRecordsByGuildId(((SocketTextChannel) textChannel).Guild.Id);
 
-            if (GetRestTextChannel(this.shard, guild.MessageDeletedEvent.Key, out RestTextChannel restTextChannel))
+            if (!GetRestTextChannel(this.shard, guild.MessageDeletedEvent.Key, out RestTextChannel restTextChannel))
             {
-                IMessage message = cachedMessage.Value;
-                EmbedBuilder embedBuilder = new()
-                {
-                    
-                    Author = new EmbedAuthorBuilder{Name = message.Author.Mention, IconUrl = message.Author.GetAvatarUrl()},
-                    Title = $"Message by {message.Author.Mention} was deleted in {((SocketTextChannel) textChannel).Mention}",
-                    Description = message.Content,
-                    Footer = new EmbedFooterBuilder{Text = $"Author ID: {message.Author.Id}, Message ID: {message.Id}, at {DateTime.UtcNow} UTC"}
-                };
-
-                await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
+                return;
             }
+
+            IMessage message = cachedMessage.Value;
+            EmbedBuilder embedBuilder = new()
+            {
+                Author = new EmbedAuthorBuilder
+                {
+                    Name = message.Author.Mention,
+                    IconUrl = message.Author.GetAvatarUrl()
+                },
+                Title =
+                    $"Message by {message.Author.Mention} was deleted in {((SocketTextChannel) textChannel).Mention}",
+                Description = message.Content,
+                Footer = new EmbedFooterBuilder
+                {
+                    Text = $"Author ID: {message.Author.Id}, Message ID: {message.Id}, at {DateTime.UtcNow} UTC"
+                }
+            };
+
+            await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Auditor.Handlers.Events
             this.database = d;
             this.shard = s;
             this.shard.ReactionsCleared += ShardOnReactionsCleared;
-            logger.Information("Registered");
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnReactionsCleared(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel textChannel)

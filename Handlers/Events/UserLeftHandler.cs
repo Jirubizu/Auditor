@@ -18,10 +18,10 @@ namespace Auditor.Handlers.Events
 
         public UserLeftHandler(DiscordShardedClient s, DatabaseService d)
         {
-            this.shard = s;
             this.database = d;
-            this.logger.Information("Registered");
+            this.shard = s;
             this.shard.UserLeft += ShardOnUserLeft;
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnUserLeft(SocketGuildUser user)

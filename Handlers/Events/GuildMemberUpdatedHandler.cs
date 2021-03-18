@@ -21,14 +21,14 @@ namespace Auditor.Handlers.Events
         public GuildMemberUpdatedHandler(DiscordShardedClient s, DatabaseService d)
         {
             this.database = d;
-            s.GuildMemberUpdated += ShardOnGuildMemberUpdated;
-            shard = s;
-            logger.Information("Registered");
+            this.shard = s;
+            this.shard.GuildMemberUpdated += ShardOnGuildMemberUpdated;
+            this.logger.Information("Registered");
         }
-        
+
         private async Task ShardOnGuildMemberUpdated(SocketGuildUser prevUser, SocketGuildUser newUser)
         {
-            GuildBson guild = await database.LoadRecordsByGuildId(prevUser.Guild.Id);
+            GuildBson guild = await this.database.LoadRecordsByGuildId(prevUser.Guild.Id);
 
             if (GetRestTextChannel(this.shard, guild.GuildMemberUpdatedEvent.Key, out RestTextChannel restTextChannel))
             {
@@ -36,10 +36,18 @@ namespace Auditor.Handlers.Events
                 {
                     new EmbedFieldBuilder {Name = "User Id", Value = newUser.Id}
                 };
-            
-                foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(prevUser, newUser, new[] {"MutualGuilds", "Roles", "JoinedAt"}))
+
+                IEnumerable<PropertyInfo> differentPropertyInfos = EnumeratingUtilities.GetDifferentProperties(prevUser,
+                    newUser,
+                    new[] {"MutualGuilds", "Roles", "JoinedAt"});
+
+                foreach (PropertyInfo info in differentPropertyInfos)
                 {
-                    fields.Add(new EmbedFieldBuilder{Name = info.Name, Value = $"{info.GetValue(prevUser) ?? "null"} to {info.GetValue(newUser) ?? "null"}"});
+                    fields.Add(new EmbedFieldBuilder
+                    {
+                        Name = info.Name,
+                        Value = $"{info.GetValue(prevUser) ?? "null"} to {info.GetValue(newUser) ?? "null"}"
+                    });
                 }
 
                 EmbedBuilder embedBuilder = new()

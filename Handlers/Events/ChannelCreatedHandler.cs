@@ -21,7 +21,7 @@ namespace Auditor.Handlers.Events
             this.shard = s;
             this.database = d;
             this.shard.ChannelCreated += ShardOnChannelCreated;
-            logger.Information("Registered");
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnChannelCreated(SocketChannel arg)

@@ -23,18 +23,24 @@ namespace Auditor.Handlers.Events
             this.database = d;
             this.shard = s;
             this.shard.UserUpdated += ShardOnUserUpdated;
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnUserUpdated(SocketUser prevUser, SocketUser newUser)
         {
             List<GuildBson> guilds = await this.database.LoadRecords();
+
             foreach (GuildBson guild in guilds)
             {
                 if (GetRestTextChannel(this.shard, guild.UserUpdatedEvent.Key, out RestTextChannel restTextChannel))
                 {
                     List<EmbedFieldBuilder> fields = new();
-                    
-                    foreach (PropertyInfo info in EnumeratingUtilities.GetDifferentProperties(prevUser, newUser, new[] {""}))
+
+                    IEnumerable<PropertyInfo> differentPropertyInfos = EnumeratingUtilities.GetDifferentProperties(
+                        prevUser, newUser,
+                        new[] {""});
+
+                    foreach (PropertyInfo info in differentPropertyInfos)
                     {
                         fields.Add(new EmbedFieldBuilder
                         {
@@ -46,7 +52,7 @@ namespace Auditor.Handlers.Events
                         });
                         fields.Add(new EmbedFieldBuilder {Name = "|", Value = "|", IsInline = true});
                     }
-                    
+
                     EmbedBuilder embedBuilder = new()
                     {
                         Color = Color.Blue,

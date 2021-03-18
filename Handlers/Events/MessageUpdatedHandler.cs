@@ -23,7 +23,7 @@ namespace Auditor.Handlers.Events
             this.shard = s;
             this.paginationService = p;
             this.shard.MessageUpdated += ShardOnMessageUpdated;
-            logger.Information("Registered");
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnMessageUpdated(Cacheable<IMessage, ulong> cachedMessage, SocketMessage newMessage,

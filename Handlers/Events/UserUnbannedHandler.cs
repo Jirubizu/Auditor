@@ -18,10 +18,10 @@ namespace Auditor.Handlers.Events
 
         public UserUnbannedHandler(DiscordShardedClient s, DatabaseService d)
         {
-            this.shard = s;
             this.database = d;
-            this.logger.Information("Registered");
+            this.shard = s;
             this.shard.UserUnbanned += ShardOnUserUnbanned;
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnUserUnbanned(SocketUser user, SocketGuild socketGuild)
@@ -51,7 +51,7 @@ namespace Auditor.Handlers.Events
                     ImageUrl = user.GetAvatarUrl(),
                     Footer = new EmbedFooterBuilder {Text = $"Unbanned on {DateTime.UtcNow} UTC"}
                 };
-                
+
                 await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
             }
         }

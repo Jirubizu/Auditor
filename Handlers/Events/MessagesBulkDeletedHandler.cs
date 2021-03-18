@@ -24,7 +24,7 @@ namespace Auditor.Handlers.Events
             this.shard = s;
             this.paginationService = p;
             this.shard.MessagesBulkDeleted += ShardOnMessagesBulkDeleted;
-            logger.Information("Registered");
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnMessagesBulkDeleted(IReadOnlyCollection<Cacheable<IMessage, ulong>> cachedMessages,

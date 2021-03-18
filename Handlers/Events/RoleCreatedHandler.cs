@@ -24,22 +24,29 @@ namespace Auditor.Handlers.Events
             this.database = d;
             this.shard = s;
             this.shard.RoleCreated += ShardOnRoleCreated;
-            logger.Information("Registered");
+            this.logger.Information("Registered");
         }
 
-        private async Task ShardOnRoleCreated(SocketRole arg)
+        private async Task ShardOnRoleCreated(SocketRole role)
         {
-            GuildBson guild = await database.LoadRecordsByGuildId(arg.Guild.Id);
+            GuildBson guild = await this.database.LoadRecordsByGuildId(role.Guild.Id);
 
             if (GetRestTextChannel(this.shard, guild.RoleCreatedEvent.Key, out RestTextChannel restTextChannel))
             {
+                string permissions = role.Permissions.ToList()
+                    .Aggregate("", (current, permission) => current + permission + ", ");
+                
                 EmbedBuilder embedBuilder = new()
                 {
-                    Color = arg.Color,
+                    Color = role.Color,
                     Fields = new List<EmbedFieldBuilder>
                     {
-                        new() {Name = "Role", Value = arg.Name},
-                        new() {Name = "Permissions", Value = arg.Permissions.ToList().Aggregate("", (current, permission) => current + permission + ", ")}
+                        new() {Name = "Role", Value = role.Name},
+                        new()
+                        {
+                            Name = "Permissions",
+                            Value = permissions
+                        }
                     },
                     Footer = new EmbedFooterBuilder {Text = $"Created at {DateTime.UtcNow} UTC"}
                 };

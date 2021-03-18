@@ -18,10 +18,10 @@ namespace Auditor.Handlers.Events
 
         public UserJoinedHandler(DiscordShardedClient s, DatabaseService d)
         {
-            this.shard = s;
             this.database = d;
-            this.logger.Information("Registered");
+            this.shard = s;
             this.shard.UserJoined += ShardOnUserJoined;
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnUserJoined(SocketGuildUser user)
@@ -51,7 +51,7 @@ namespace Auditor.Handlers.Events
                     ImageUrl = user.GetAvatarUrl(),
                     Footer = new EmbedFooterBuilder {Text = $"Joined on {DateTime.UtcNow} UTC"}
                 };
-                
+
                 await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
             }
         }

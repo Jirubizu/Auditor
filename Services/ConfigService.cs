@@ -10,7 +10,7 @@ namespace Auditor.Services
 
         public ConfigService(string path)
         {
-            Config = JsonConvert.DeserializeObject<ConfigStruct>(File.ReadAllText(path));
+            this.Config = JsonConvert.DeserializeObject<ConfigStruct>(File.ReadAllText(path));
         }
         
     }

@@ -21,14 +21,12 @@ namespace Auditor.Handlers.Events
             this.database = d;
             this.shard = s;
             this.shard.UserVoiceStateUpdated += ShardOnUserVoiceStateUpdated;
+            this.logger.Information("Registered");
         }
 
         private async Task ShardOnUserVoiceStateUpdated(SocketUser user, SocketVoiceState prevVoiceState,
             SocketVoiceState newVoiceState)
         {
-            logger.Information("Prev Voice State Channel ID {PrevId}, new Voice State Channel Id {NewId}",
-                prevVoiceState.VoiceChannel?.Guild.Id, newVoiceState.VoiceChannel?.Guild.Id);
-
             ulong? guildId = prevVoiceState.VoiceChannel?.Guild.Id ?? newVoiceState.VoiceChannel?.Guild.Id;
 
             GuildBson guild = await this.database.LoadRecordsByGuildId(guildId.Value);
@@ -40,14 +38,22 @@ namespace Auditor.Handlers.Events
 
                 if (prevVoiceState.VoiceChannel != null)
                 {
-                    fields.Add(new EmbedFieldBuilder{Name = $"Left {prevVoiceState.VoiceChannel.Name}", Value = DateTime.UtcNow + " UTC"});
+                    fields.Add(new EmbedFieldBuilder
+                    {
+                        Name = $"Left {prevVoiceState.VoiceChannel.Name}",
+                        Value = DateTime.UtcNow + " UTC"
+                    });
                 }
 
                 if (newVoiceState.VoiceChannel != null)
                 {
-                    fields.Add(new EmbedFieldBuilder{Name = $"Joined {newVoiceState.VoiceChannel.Name}", Value = DateTime.UtcNow + " UTC"});
+                    fields.Add(new EmbedFieldBuilder
+                    {
+                        Name = $"Joined {newVoiceState.VoiceChannel.Name}",
+                        Value = DateTime.UtcNow + " UTC"
+                    });
                 }
-                
+
                 EmbedBuilder embedBuilder = new()
                 {
                     Title = user.Username,
@@ -55,7 +61,7 @@ namespace Auditor.Handlers.Events
                     Color = Color.Blue,
                     ThumbnailUrl = user.GetAvatarUrl()
                 };
-                
+
                 await restTextChannel.SendMessageAsync("", false, embedBuilder.Build());
             }
         }

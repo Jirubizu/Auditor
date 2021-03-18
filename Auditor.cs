@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -20,60 +21,62 @@ namespace Auditor
         private ConfigService configService;
         private HelpService helpService;
         private readonly ILogger logger = Log.ForContext<Auditor>();
+        private readonly IEnumerable<Type> handlers;
 
         public Auditor(DiscordShardedClient shard = null, CommandService cmd = null)
         {
-            client = shard ?? new DiscordShardedClient(new DiscordSocketConfig
+            this.client = shard ?? new DiscordShardedClient(new DiscordSocketConfig
             {
                 AlwaysDownloadUsers = true,
                 MessageCacheSize = 50,
                 LogLevel = LogSeverity.Verbose
             });
 
-            command = cmd ?? new CommandService(new CommandServiceConfig
+            this.command = cmd ?? new CommandService(new CommandServiceConfig
             {
                 LogLevel = LogSeverity.Verbose,
                 CaseSensitiveCommands = false,
                 DefaultRunMode = RunMode.Async
             });
+
+            this.handlers = typeof(EventHandler).Assembly.GetTypes().Where(h => h.BaseType == typeof(EventHandler));
         }
 
         public async Task SetupAsync(string configLoc)
         {
-            configService = new ConfigService(configLoc);
+            this.configService = new ConfigService(configLoc);
             // Find a neater way of checking if the database is down.
             using (TcpClient tcpClient = new())
             {
                 try
                 {
-                    await tcpClient.ConnectAsync(configService.Config.DatabaseIp, configService.Config.DatabasePort);
-                    logger.Information("Database is active");
+                    await tcpClient.ConnectAsync(this.configService.Config.DatabaseIp, this.configService.Config.DatabasePort);
+                    this.logger.Information("Database is active");
                 }
                 catch (Exception)
                 {
-                    logger.Fatal("Could not connect to the database. Make sure your database is running");
+                    this.logger.Fatal("Could not connect to the database. Make sure your database is running");
                     throw;
                 }
             }
 
-            helpService = new HelpService(command);
-            await client.LoginAsync(TokenType.Bot, configService.Config.Token);
-            await client.StartAsync();
+            this.helpService = new HelpService(this.command);
+            await this.client.LoginAsync(TokenType.Bot, configService.Config.Token);
+            await this.client.StartAsync();
 
-            client.Log += LogAsync;
+            this.client.Log += LogAsync;
 
             IServiceProvider services = SetupServices();
 
             CommandHandler commandHandler = services.GetRequiredService<CommandHandler>();
             await commandHandler.SetupAsync();
 
-            foreach (Type handler in typeof(EventHandler).Assembly.GetTypes()
-                .Where(h => h.BaseType == typeof(EventHandler)))
+            foreach (Type handler in this.handlers)
             {
                 services.GetRequiredService(handler);
             }
 
-            helpService.Setup();
+            this.helpService.Setup();
 
             await Task.Delay(-1);
         }
@@ -82,16 +85,15 @@ namespace Auditor
         {
             ServiceCollection collection = new();
             collection.AddSingleton(this);
-            collection.AddSingleton(client);
-            collection.AddSingleton(command);
-            collection.AddSingleton(configService);
-            collection.AddSingleton(helpService);
+            collection.AddSingleton(this.client);
+            collection.AddSingleton(this.command);
+            collection.AddSingleton(this.configService);
+            collection.AddSingleton(this.helpService);
             collection.AddSingleton<CommandHandler>();
             collection.AddSingleton<DatabaseService>();
             collection.AddSingleton<PaginationService>();
 
-            foreach (Type handler in typeof(EventHandler).Assembly.GetTypes()
-                .Where(h => h.BaseType == typeof(EventHandler)))
+            foreach (Type handler in this.handlers)
             {
                 collection.AddSingleton(handler);
             }
@@ -101,7 +103,7 @@ namespace Auditor
 
         private Task LogAsync(LogMessage message)
         {
-            logger.Debug(message.Message);
+            this.logger.Debug(message.Message);
             return Task.CompletedTask;
         }
     }
