@@ -29,7 +29,7 @@ namespace Auditor.Handlers.Events
         {
             GuildBson guild = await this.database.LoadRecordsByGuildId(role.Guild.Id);
 
-            if (GetRestTextChannel(this.shard, guild.RoleDeletedEvent.Key, out RestTextChannel restTextChannel))
+            if (GetRestTextChannel(this.shard, guild.RoleDeletedEvent, out RestTextChannel restTextChannel))
             {
                 string permissions = role.Permissions.ToList()
                     .Aggregate("", (current, permission) => current + permission + ", ");

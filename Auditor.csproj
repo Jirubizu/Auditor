@@ -3,6 +3,9 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
+        <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+        <AssemblyVersion>1</AssemblyVersion>
+        <FileVersion>1</FileVersion>
     </PropertyGroup>
 
     <ItemGroup>

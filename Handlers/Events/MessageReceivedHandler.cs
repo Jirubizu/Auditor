@@ -32,7 +32,7 @@ namespace Auditor.Handlers.Events
             
             GuildBson guild = await this.database.LoadRecordsByGuildId(((SocketTextChannel) message.Channel).Guild.Id);
 
-            if (GetRestTextChannel(this.shard, guild.MessageReceivedEvent.Key, out RestTextChannel restTextChannel))
+            if (GetRestTextChannel(this.shard, guild.MessageReceivedEvent, out RestTextChannel restTextChannel))
             {
                 EmbedBuilder embedBuilder = new()
                 {

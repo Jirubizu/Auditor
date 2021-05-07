@@ -32,7 +32,7 @@ namespace Auditor.Handlers.Events
         {
             GuildBson guild = await this.database.LoadRecordsByGuildId(((SocketTextChannel) textChannel).Guild.Id);
 
-            if (GetRestTextChannel(this.shard, guild.MessagesBulkDeletedEvent.Key, out RestTextChannel restTextChannel))
+            if (GetRestTextChannel(this.shard, guild.MessagesBulkDeletedEvent, out RestTextChannel restTextChannel))
             {
                 List<EmbedBuilder> pages = new();
                 foreach (Cacheable<IMessage, ulong> message in cachedMessages)

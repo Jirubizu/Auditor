@@ -32,7 +32,7 @@ namespace Auditor.Handlers.Events
 
             foreach (GuildBson guild in guilds)
             {
-                if (GetRestTextChannel(this.shard, guild.UserUpdatedEvent.Key, out RestTextChannel restTextChannel))
+                if (GetRestTextChannel(this.shard, guild.UserUpdatedEvent, out RestTextChannel restTextChannel))
                 {
                     List<EmbedFieldBuilder> fields = new();
 

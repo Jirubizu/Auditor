@@ -29,7 +29,7 @@ namespace Auditor.Handlers.Events
             
             GuildBson guild = await this.database.LoadRecordsByGuildId(socketGuild.Id);
 
-            if (GetRestTextChannel(this.shard, guild.UserBannedEvent.Key, out RestTextChannel restTextChannel))
+            if (GetRestTextChannel(this.shard, guild.UserBannedEvent, out RestTextChannel restTextChannel))
             {
                 RestBan ban = await socketGuild.GetBanAsync(user.Id);
                 

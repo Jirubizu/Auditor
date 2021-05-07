@@ -45,7 +45,7 @@ namespace Auditor.Handlers.Events
                 case SocketTextChannel socketTextChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketTextChannel.Guild.Id);
 
-                    if (!GetRestTextChannel(this.shard, guild.ChannelUpdatedEvent.Key, out restTextChannel)) return;
+                    if (!GetRestTextChannel(this.shard, guild.ChannelUpdatedEvent, out restTextChannel)) return;
 
                     SocketTextChannel newSocketTextChannel = newChannel as SocketTextChannel;
 
@@ -55,6 +55,19 @@ namespace Auditor.Handlers.Events
 
                     foreach (PropertyInfo info in differentPropertyInfos)
                     {
+                        if (info.GetType() == typeof(IEnumerable<Overwrite>))
+                        {
+                            foreach (Overwrite overwrite in (IEnumerable<Overwrite>) info) 
+                            {
+                                fields.Add(new EmbedFieldBuilder
+                                {
+                                    Name = overwrite.TargetType.ToString(),
+                                    Value = info.GetValue(socketTextChannel) + " to " + info.GetValue(newSocketTextChannel),
+                                    IsInline = true
+                                });
+                            }
+                        }
+
                         fields.Add(new EmbedFieldBuilder
                         {
                             Name = info.Name,
@@ -68,7 +81,7 @@ namespace Auditor.Handlers.Events
                 case SocketVoiceChannel socketVoiceChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketVoiceChannel.Guild.Id);
 
-                    if (!GetRestTextChannel(this.shard, guild.ChannelUpdatedEvent.Key, out restTextChannel)) return;
+                    if (!GetRestTextChannel(this.shard, guild.ChannelUpdatedEvent, out restTextChannel)) return;
 
                     SocketVoiceChannel newSocketVoiceChannel = newChannel as SocketVoiceChannel;
 

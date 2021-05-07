@@ -8,7 +8,7 @@ namespace Auditor.Handlers
     {
         protected static bool GetRestTextChannel(DiscordShardedClient shard,ulong? channelId, out RestTextChannel textChannel)
         {
-            if (channelId != null && shard.Rest.GetChannelAsync(channelId.GetValueOrDefault()).Result is RestTextChannel t)
+            if (channelId != null && channelId != 0 && shard.Rest.GetChannelAsync(channelId.GetValueOrDefault()).Result is RestTextChannel t)
             {
                 textChannel = t;
                 return true;

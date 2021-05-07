@@ -50,7 +50,7 @@ namespace Auditor
             {
                 try
                 {
-                    await tcpClient.ConnectAsync(this.configService.Config.DatabaseIp, this.configService.Config.DatabasePort);
+                    await tcpClient.ConnectAsync("localhost", 27017);
                     this.logger.Information("Database is active");
                 }
                 catch (Exception)

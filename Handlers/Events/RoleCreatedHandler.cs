@@ -31,7 +31,7 @@ namespace Auditor.Handlers.Events
         {
             GuildBson guild = await this.database.LoadRecordsByGuildId(role.Guild.Id);
 
-            if (GetRestTextChannel(this.shard, guild.RoleCreatedEvent.Key, out RestTextChannel restTextChannel))
+            if (GetRestTextChannel(this.shard, guild.RoleCreatedEvent, out RestTextChannel restTextChannel))
             {
                 string permissions = role.Permissions.ToList()
                     .Aggregate("", (current, permission) => current + permission + ", ");

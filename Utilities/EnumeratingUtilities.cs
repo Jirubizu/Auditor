@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
-using Discord.WebSocket;
+using Discord;
 
 namespace Auditor.Utilities
 {
@@ -15,14 +14,19 @@ namespace Auditor.Utilities
                 // if (info.GetValue(oldT) == null) continue;
                 if (ignorePropertyNames.Contains(info.Name)) continue;
 
-                if (info.Name == "Roles")
-                {
-                    foreach (SocketRole role in (IEnumerable<SocketRole>) ((ReadOnlyCollection<SocketRole>) info.GetValue(oldT)).GetEnumerator())
-                    {
-                        // TODO: Cant be fucked with this rn fucking fix my own shit I am so fucking stuuuupid!!
-                    }
-                }
                 
+                // Possibly can be removed completely due to discord having its own event
+                // if (info.Name == "Roles")
+                // {
+                //     IEnumerable<SocketRole> roles =
+                //         (IEnumerable<SocketRole>) ((ReadOnlyCollection<SocketRole>) info.GetValue(oldT))
+                //         .GetEnumerator();
+                //     
+                //     foreach (SocketRole role in roles)
+                //     {
+                //         // 
+                //     }
+                // }
                 if (info.GetValue(oldT)?.GetHashCode() != info.GetValue(newT)?.GetHashCode())
                 {
                     yield return info;

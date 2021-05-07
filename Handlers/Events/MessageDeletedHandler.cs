@@ -28,7 +28,7 @@ namespace Auditor.Handlers.Events
         {
             GuildBson guild = await this.database.LoadRecordsByGuildId(((SocketTextChannel) textChannel).Guild.Id);
 
-            if (!GetRestTextChannel(this.shard, guild.MessageDeletedEvent.Key, out RestTextChannel restTextChannel))
+            if (!GetRestTextChannel(this.shard, guild.MessageDeletedEvent, out RestTextChannel restTextChannel))
             {
                 return;
             }

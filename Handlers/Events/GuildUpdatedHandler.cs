@@ -30,7 +30,7 @@ namespace Auditor.Handlers.Events
         {
             GuildBson guild = await this.database.LoadRecordsByGuildId(prevGuild.Id);
 
-            if (GetRestTextChannel(this.shard, guild.GuildUpdatedEvent.Key, out RestTextChannel restTextChannel))
+            if (GetRestTextChannel(this.shard, guild.GuildUpdatedEvent, out RestTextChannel restTextChannel))
             {
                 List<EmbedFieldBuilder> fields = new();
 

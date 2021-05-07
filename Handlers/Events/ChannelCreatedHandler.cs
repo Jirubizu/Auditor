@@ -35,7 +35,7 @@ namespace Auditor.Handlers.Events
                 case SocketTextChannel socketTextChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketTextChannel.Guild.Id);
 
-                    if (!GetRestTextChannel(this.shard, guild.ChannelCreatedEvent.Key, out restTextChannel)) return;
+                    if (!GetRestTextChannel(this.shard, guild.ChannelCreatedEvent, out restTextChannel)) return;
 
                     fields = new List<EmbedFieldBuilder>
                     {
@@ -61,7 +61,7 @@ namespace Auditor.Handlers.Events
                 case SocketVoiceChannel socketVoiceChannel:
                     guild = await this.database.LoadRecordsByGuildId(socketVoiceChannel.Guild.Id);
 
-                    if (!GetRestTextChannel(this.shard, guild.ChannelCreatedEvent.Key, out restTextChannel)) return;
+                    if (!GetRestTextChannel(this.shard, guild.ChannelCreatedEvent, out restTextChannel)) return;
 
                     fields = new List<EmbedFieldBuilder>
                     {
